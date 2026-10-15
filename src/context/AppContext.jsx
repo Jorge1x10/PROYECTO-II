@@ -4,12 +4,15 @@ import {
   USUARIOS_INICIALES,
   VISITAS_INICIALES,
 } from '../data/seed'
+import { cifrarPassword, verificarPassword } from '../utils/passwords'
 
 const AppContext = createContext(null)
 
 const CLAVE_DATOS = 'robac-datos'
 const CLAVE_SESION = 'robac-sesion'
 const MAX_BITACORA = 200
+const MIN_PASSWORD = 6
+const SIN_PERMISO = { ok: false, error: 'No tienes permiso para hacer esto.' }
 
 function cargarDatos() {
   try {
@@ -44,6 +47,19 @@ function nuevaEntrada(actor, accion, detalle) {
   }
 }
 
+// Devuelve el usuario con su contraseña cifrada y sin rastro de la contraseña en texto plano.
+function conClave(usuario, clave) {
+  // eslint-disable-next-line no-unused-vars
+  const { password, ...resto } = usuario
+  return { ...resto, clave }
+}
+
+// Comprueba una contraseña contra el usuario (cifrada o, en datos viejos, en texto plano).
+async function coincidePassword(usuario, password) {
+  if (usuario.clave) return verificarPassword(password, usuario.clave)
+  return usuario.password === password
+}
+
 export function AppProvider({ children }) {
   const [datos, setDatos] = useState(cargarDatos)
   const [sesionId, setSesionId] = useState(cargarSesion)
@@ -55,6 +71,31 @@ export function AppProvider({ children }) {
       // sin almacenamiento la app sigue funcionando en memoria
     }
   }, [datos])
+
+  // Migración: los datos guardados en el Sprint 1 y 2 tenían contraseñas en texto plano.
+  // Al abrir la app se cifran una sola vez.
+  useEffect(() => {
+    const pendientes = datos.usuarios.filter((u) => u.password)
+    if (pendientes.length === 0) return undefined
+    let vigente = true
+    Promise.all(
+      pendientes.map(async (u) => [u.id, await cifrarPassword(u.password)]),
+    ).then((pares) => {
+      if (!vigente) return
+      const claves = Object.fromEntries(pares)
+      setDatos((prev) => ({
+        ...prev,
+        usuarios: prev.usuarios.map((u) =>
+          u.password && claves[u.id] ? conClave(u, claves[u.id]) : u,
+        ),
+      }))
+    })
+    return () => {
+      vigente = false
+    }
+    // Solo se ejecuta al abrir la app.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const usuario =
     datos.usuarios.find((u) => u.id === sesionId && u.activo) || null
@@ -77,11 +118,11 @@ export function AppProvider({ children }) {
   }
 
   // ---------- Sesión ----------
-  function iniciarSesion(correo, password) {
+  async function iniciarSesion(correo, password) {
     const u = datos.usuarios.find(
       (x) => x.correo.toLowerCase() === correo.trim().toLowerCase(),
     )
-    if (!u || u.password !== password) {
+    if (!u || !(await coincidePassword(u, password))) {
       return { ok: false, error: 'Correo o contraseña incorrectos.' }
     }
     if (!u.activo) {
@@ -110,8 +151,37 @@ export function AppProvider({ children }) {
     setSesionId(null)
   }
 
+  // ---------- Mi cuenta ----------
+  async function cambiarMiPassword(actual, nueva) {
+    if (!(await coincidePassword(usuario, actual))) {
+      return { ok: false, error: 'La contraseña actual no es correcta.' }
+    }
+    if (nueva.length < MIN_PASSWORD) {
+      return {
+        ok: false,
+        error: `La nueva contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`,
+      }
+    }
+    if (nueva === actual) {
+      return { ok: false, error: 'La nueva contraseña debe ser distinta de la actual.' }
+    }
+    const clave = await cifrarPassword(nueva)
+    aplicar(
+      (prev) => ({
+        ...prev,
+        usuarios: prev.usuarios.map((u) =>
+          u.id === usuario.id ? conClave(u, clave) : u,
+        ),
+      }),
+      'Contraseña cambiada',
+      usuario.nombre,
+    )
+    return { ok: true }
+  }
+
   // ---------- Usuarios ----------
-  function crearUsuario({ nombre, correo, password, rolId, casa }) {
+  async function crearUsuario({ nombre, correo, password, rolId, casa }) {
+    if (!tiene('usuarios.gestionar')) return SIN_PERMISO
     const existe = datos.usuarios.some(
       (u) => u.correo.toLowerCase() === correo.trim().toLowerCase(),
     )
@@ -120,7 +190,7 @@ export function AppProvider({ children }) {
       id: crypto.randomUUID(),
       nombre: nombre.trim(),
       correo: correo.trim(),
-      password,
+      clave: await cifrarPassword(password),
       rolId,
       casa: casa.trim() || '—',
       activo: true,
@@ -133,7 +203,60 @@ export function AppProvider({ children }) {
     return { ok: true }
   }
 
+  function editarUsuario(id, { nombre, correo, casa }) {
+    if (!tiene('usuarios.gestionar')) return SIN_PERMISO
+    const objetivo = datos.usuarios.find((u) => u.id === id)
+    if (!objetivo) return { ok: false, error: 'El usuario ya no existe.' }
+    if (!nombre.trim()) return { ok: false, error: 'El nombre no puede estar vacío.' }
+    const repetido = datos.usuarios.some(
+      (u) => u.id !== id && u.correo.toLowerCase() === correo.trim().toLowerCase(),
+    )
+    if (repetido) return { ok: false, error: 'Ya existe un usuario con ese correo.' }
+    aplicar(
+      (prev) => ({
+        ...prev,
+        usuarios: prev.usuarios.map((u) =>
+          u.id === id
+            ? {
+                ...u,
+                nombre: nombre.trim(),
+                correo: correo.trim(),
+                casa: casa.trim() || '—',
+              }
+            : u,
+        ),
+      }),
+      'Datos de usuario editados',
+      objetivo.nombre,
+    )
+    return { ok: true }
+  }
+
+  // Recuperación asistida: el administrador asigna una contraseña temporal.
+  async function restablecerPassword(id, nueva) {
+    if (!tiene('usuarios.gestionar')) return SIN_PERMISO
+    const objetivo = datos.usuarios.find((u) => u.id === id)
+    if (!objetivo) return { ok: false, error: 'El usuario ya no existe.' }
+    if (nueva.length < MIN_PASSWORD) {
+      return {
+        ok: false,
+        error: `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`,
+      }
+    }
+    const clave = await cifrarPassword(nueva)
+    aplicar(
+      (prev) => ({
+        ...prev,
+        usuarios: prev.usuarios.map((u) => (u.id === id ? conClave(u, clave) : u)),
+      }),
+      'Contraseña restablecida',
+      objetivo.nombre,
+    )
+    return { ok: true }
+  }
+
   function cambiarRolUsuario(id, rolId) {
+    if (!tiene('usuarios.gestionar')) return SIN_PERMISO
     const objetivo = datos.usuarios.find((u) => u.id === id)
     aplicar(
       (prev) => ({
@@ -143,9 +266,11 @@ export function AppProvider({ children }) {
       'Rol cambiado',
       `${objetivo.nombre}: ${objetivo.rolId} → ${rolId}`,
     )
+    return { ok: true }
   }
 
   function alternarActivo(id) {
+    if (!tiene('usuarios.gestionar')) return SIN_PERMISO
     const objetivo = datos.usuarios.find((u) => u.id === id)
     aplicar(
       (prev) => ({
@@ -157,10 +282,12 @@ export function AppProvider({ children }) {
       objetivo.activo ? 'Usuario desactivado' : 'Usuario activado',
       objetivo.nombre,
     )
+    return { ok: true }
   }
 
   // ---------- Roles y permisos ----------
   function alternarPermiso(rolId, permisoId) {
+    if (!tiene('roles.gestionar')) return SIN_PERMISO
     const r = datos.roles.find((x) => x.id === rolId)
     const concede = !r.permisos.includes(permisoId)
     aplicar(
@@ -180,10 +307,12 @@ export function AppProvider({ children }) {
       concede ? 'Permiso concedido' : 'Permiso retirado',
       `${permisoId} → ${r.nombre}`,
     )
+    return { ok: true }
   }
 
   // ---------- Visitas ----------
   function autorizarVisita({ visitante, fecha }) {
+    if (!tiene('visitas.autorizar')) return SIN_PERMISO
     const nueva = {
       id: crypto.randomUUID(),
       visitante: visitante.trim(),
@@ -196,10 +325,17 @@ export function AppProvider({ children }) {
       'Visita autorizada',
       `${nueva.visitante} para ${usuario.casa}`,
     )
+    return { ok: true }
   }
 
   function cambiarEstadoVisita(id, estado) {
     const visita = datos.visitas.find((v) => v.id === id)
+    const esDueno = visita?.residenteId === usuario?.id
+    const permitido =
+      estado === 'cancelada'
+        ? esDueno || tiene('visitas.registrar')
+        : tiene('visitas.registrar')
+    if (!visita || !permitido) return SIN_PERMISO
     const acciones = {
       dentro: 'Entrada registrada',
       salio: 'Salida registrada',
@@ -213,6 +349,7 @@ export function AppProvider({ children }) {
       acciones[estado],
       visita.visitante,
     )
+    return { ok: true }
   }
 
   const valor = {
@@ -222,7 +359,10 @@ export function AppProvider({ children }) {
     tiene,
     iniciarSesion,
     cerrarSesion,
+    cambiarMiPassword,
     crearUsuario,
+    editarUsuario,
+    restablecerPassword,
     cambiarRolUsuario,
     alternarActivo,
     alternarPermiso,

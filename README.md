@@ -30,8 +30,9 @@ src/
   data/seed.js            Catálogo de permisos, roles y usuarios iniciales
   context/AppContext.jsx  Estado global: sesión, usuarios, roles, visitas, bitácora
   components/             Layout (menú por rol) y ProtectedRoute
-  pages/                  Login, Dashboard, Usuarios, Roles, Visitas, Bitácora
-  test/robac.test.jsx     Pruebas de los flujos principales
+  pages/                  Login, Dashboard, Usuarios, Roles, Visitas, Bitácora, Mi cuenta
+  utils/passwords.js      Cifrado de contraseñas (PBKDF2 con sal)
+  test/                   Pruebas: robac (Sprint 1 y 2), cripto y sprint3 (Sprint 3)
 ```
 
 ## Sprint 1: acceso y roles
@@ -49,8 +50,15 @@ src/
 - Residente autoriza visitas; guardia registra entrada y salida (`Visitas.jsx`)
 - Bitácora con búsqueda de todos los movimientos (`Bitacora.jsx`)
 
-## Pendiente (Sprint 3)
+## Sprint 3: seguridad de cuentas y administración
+
+- Contraseñas cifradas con PBKDF2 y sal aleatoria; migración de los datos guardados en texto plano (`passwords.js`, `AppContext.jsx`)
+- Pantalla Mi cuenta para cambiar la propia contraseña (`MiCuenta.jsx`)
+- Edición de los datos de un usuario existente (`Usuarios.jsx`)
+- Restablecimiento de contraseña por el administrador (`Usuarios.jsx`)
+- Los permisos también se validan en la lógica, no solo en la interfaz (`AppContext.jsx`)
+
+## Pendiente (Sprint 4)
 
 - Backend y base de datos
-- Recuperación y cifrado de contraseñas
-- Edición de los datos de un usuario existente
+- Recuperación de contraseña por correo

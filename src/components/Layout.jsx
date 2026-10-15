@@ -12,6 +12,7 @@ const ENLACES = [
     permiso: ['visitas.autorizar', 'visitas.registrar'],
   },
   { a: '/bitacora', texto: 'Bitácora', permiso: 'bitacora.ver' },
+  { a: '/cuenta', texto: 'Mi cuenta', permiso: null },
 ]
 
 export default function Layout() {

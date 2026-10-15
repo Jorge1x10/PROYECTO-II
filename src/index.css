@@ -303,3 +303,27 @@ td.acciones {
     padding: 0.75rem 1rem;
   }
 }
+
+/* Sprint 3 */
+.exito {
+  color: var(--ok);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.formulario .exito {
+  grid-column: 1 / -1;
+}
+
+.formulario .acciones {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.formulario.separado {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--borde);
+}

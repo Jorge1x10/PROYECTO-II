@@ -11,9 +11,9 @@ export default function Login() {
 
   if (usuario) return <Navigate to="/" replace />
 
-  function enviar(e) {
+  async function enviar(e) {
     e.preventDefault()
-    const resultado = iniciarSesion(correo, password)
+    const resultado = await iniciarSesion(correo, password)
     if (resultado.ok) navegar('/')
     else setError(resultado.error)
   }

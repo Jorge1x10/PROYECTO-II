@@ -3,6 +3,113 @@ import { useApp } from '../context/AppContext'
 
 const FORM_VACIO = { nombre: '', correo: '', password: '', rolId: 'residente', casa: '' }
 
+// Tarjeta para editar los datos de un usuario o restablecer su contraseña.
+function EditarUsuario({ objetivo, onCerrar }) {
+  const { editarUsuario, restablecerPassword } = useApp()
+  const [datos, setDatos] = useState({
+    nombre: objetivo.nombre,
+    correo: objetivo.correo,
+    casa: objetivo.casa === '—' ? '' : objetivo.casa,
+  })
+  const [temporal, setTemporal] = useState('')
+  const [errorDatos, setErrorDatos] = useState('')
+  const [errorClave, setErrorClave] = useState('')
+  const [avisoClave, setAvisoClave] = useState('')
+
+  function guardar(e) {
+    e.preventDefault()
+    const resultado = editarUsuario(objetivo.id, datos)
+    if (resultado.ok) onCerrar()
+    else setErrorDatos(resultado.error)
+  }
+
+  async function restablecer(e) {
+    e.preventDefault()
+    const resultado = await restablecerPassword(objetivo.id, temporal)
+    if (resultado.ok) {
+      setTemporal('')
+      setErrorClave('')
+      setAvisoClave('Contraseña restablecida. Compártela con la persona de forma segura.')
+    } else {
+      setAvisoClave('')
+      setErrorClave(resultado.error)
+    }
+  }
+
+  return (
+    <section className="tarjeta" aria-label={`Editar a ${objetivo.nombre}`}>
+      <h2>Editar a {objetivo.nombre}</h2>
+
+      <form className="formulario" onSubmit={guardar}>
+        <label>
+          Nombre
+          <input
+            value={datos.nombre}
+            onChange={(e) => setDatos({ ...datos, nombre: e.target.value })}
+            required
+          />
+        </label>
+        <label>
+          Correo
+          <input
+            type="email"
+            value={datos.correo}
+            onChange={(e) => setDatos({ ...datos, correo: e.target.value })}
+            required
+          />
+        </label>
+        <label>
+          Casa
+          <input
+            value={datos.casa}
+            onChange={(e) => setDatos({ ...datos, casa: e.target.value })}
+          />
+        </label>
+        {errorDatos && (
+          <p className="error" role="alert">
+            {errorDatos}
+          </p>
+        )}
+        <div className="acciones">
+          <button type="submit">Guardar cambios</button>
+          <button type="button" className="secundario" onClick={onCerrar}>
+            Cerrar
+          </button>
+        </div>
+      </form>
+
+      <form className="formulario separado" onSubmit={restablecer}>
+        <label>
+          Contraseña temporal
+          <input
+            type="password"
+            value={temporal}
+            onChange={(e) => setTemporal(e.target.value)}
+            autoComplete="new-password"
+            minLength={6}
+            required
+          />
+        </label>
+        {errorClave && (
+          <p className="error" role="alert">
+            {errorClave}
+          </p>
+        )}
+        {avisoClave && (
+          <p className="exito" role="status">
+            {avisoClave}
+          </p>
+        )}
+        <div className="acciones">
+          <button type="submit" className="secundario">
+            Restablecer contraseña
+          </button>
+        </div>
+      </form>
+    </section>
+  )
+}
+
 export default function Usuarios() {
   const {
     usuarios,
@@ -15,15 +122,17 @@ export default function Usuarios() {
   } = useApp()
   const [form, setForm] = useState(FORM_VACIO)
   const [error, setError] = useState('')
+  const [editandoId, setEditandoId] = useState(null)
   const puedeGestionar = tiene('usuarios.gestionar')
+  const editando = usuarios.find((u) => u.id === editandoId)
 
   function cambiar(campo, valor) {
     setForm({ ...form, [campo]: valor })
   }
 
-  function enviar(e) {
+  async function enviar(e) {
     e.preventDefault()
-    const resultado = crearUsuario(form)
+    const resultado = await crearUsuario(form)
     if (resultado.ok) {
       setForm(FORM_VACIO)
       setError('')
@@ -96,6 +205,14 @@ export default function Usuarios() {
         </form>
       )}
 
+      {puedeGestionar && editando && (
+        <EditarUsuario
+          key={editando.id}
+          objetivo={editando}
+          onCerrar={() => setEditandoId(null)}
+        />
+      )}
+
       <div className="tabla-contenedor">
         <table>
           <thead>
@@ -139,7 +256,15 @@ export default function Usuarios() {
                     </span>
                   </td>
                   {puedeGestionar && (
-                    <td>
+                    <td className="acciones">
+                      <button
+                        type="button"
+                        className="secundario"
+                        aria-label={`Editar a ${u.nombre}`}
+                        onClick={() => setEditandoId(u.id)}
+                      >
+                        Editar
+                      </button>
                       {esYo ? (
                         <span className="suave">Tu cuenta</span>
                       ) : (

@@ -8,6 +8,7 @@ import Usuarios from './pages/Usuarios'
 import Roles from './pages/Roles'
 import Visitas from './pages/Visitas'
 import Bitacora from './pages/Bitacora'
+import MiCuenta from './pages/MiCuenta'
 import NoAutorizado from './pages/NoAutorizado'
 
 export default function App() {
@@ -56,6 +57,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="cuenta" element={<MiCuenta />} />
             <Route path="no-autorizado" element={<NoAutorizado />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
