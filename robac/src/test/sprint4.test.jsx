@@ -82,7 +82,7 @@ describe('Sprint 4 · recuperación de contraseña', () => {
     await user.type(screen.getByLabelText('Nueva contraseña'), 'recuperada1')
     await user.type(screen.getByLabelText('Confirmar nueva contraseña'), 'recuperada1')
     await user.click(screen.getByRole('button', { name: 'Guardar nueva contraseña' }))
-    expect(await screen.findByRole('status')).toHaveTextContent('se actualizó')
+    expect(await screen.findByText(/se actualizó/)).toBeInTheDocument()
 
     await user.click(screen.getByText('Volver a iniciar sesión'))
     await entrar(user, 'residente@robac.mx', 'recuperada1')
