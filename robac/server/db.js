@@ -69,6 +69,13 @@ CREATE TABLE IF NOT EXISTS recuperaciones (
   expira     INTEGER NOT NULL,
   intentos   INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS intentos_login (
+  correo          TEXT PRIMARY KEY,
+  fallos          INTEGER NOT NULL DEFAULT 0,
+  primer_fallo    INTEGER NOT NULL,
+  bloqueado_hasta INTEGER NOT NULL DEFAULT 0
+);
 `
 
 async function sembrar(db, iteraciones) {

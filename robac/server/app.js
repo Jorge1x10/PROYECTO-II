@@ -11,12 +11,17 @@ import {
   verificacionFalsa,
   verificar,
 } from './auth.js'
+import { envioPorConsola } from './correo.js'
 
 const MIN_PASSWORD = 6
 const SESION_MS = 8 * 60 * 60 * 1000
 const CODIGO_MS = 15 * 60 * 1000
 const REENVIO_MS = 60 * 1000
 const MAX_INTENTOS = 5
+// Inicio de sesión: tras 5 fallos en 15 minutos, el correo queda bloqueado 15 minutos.
+const MAX_FALLOS_LOGIN = 5
+const VENTANA_FALLOS_MS = 15 * 60 * 1000
+const BLOQUEO_LOGIN_MS = 15 * 60 * 1000
 const MAX_BITACORA_VISTA = 200
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const FECHA_VALIDA = /^\d{4}-\d{2}-\d{2}$/
@@ -38,11 +43,6 @@ function iguales(a, b) {
   const x = Buffer.from(a)
   const y = Buffer.from(b)
   return x.length === y.length && timingSafeEqual(x, y)
-}
-
-// Sin servicio de correo todavía: el código se escribe en la consola del servidor.
-function envioPorConsola(correo, codigo) {
-  console.log(`[ROBAC] Código de recuperación para ${correo}: ${codigo}`)
 }
 
 export function crearApp({
@@ -122,6 +122,15 @@ export function crearApp({
       'UPDATE recuperaciones SET intentos = intentos + 1 WHERE usuario_id = ?',
     ),
     borrarRecuperacion: db.prepare('DELETE FROM recuperaciones WHERE usuario_id = ?'),
+    intentosDe: db.prepare('SELECT * FROM intentos_login WHERE correo = ?'),
+    guardarIntentos: db.prepare(
+      `INSERT OR REPLACE INTO intentos_login (correo, fallos, primer_fallo, bloqueado_hasta)
+       VALUES (?, ?, ?, ?)`,
+    ),
+    borrarIntentos: db.prepare('DELETE FROM intentos_login WHERE correo = ?'),
+    borrarIntentosViejos: db.prepare(
+      'DELETE FROM intentos_login WHERE bloqueado_hasta <= ? AND primer_fallo <= ?',
+    ),
   }
 
   // ---------- Funciones de ayuda ----------
@@ -161,6 +170,41 @@ export function crearApp({
     return password
   }
 
+  // ---------- Intentos fallidos de inicio de sesión ----------
+  // Se cuentan por correo, exista o no la cuenta, para no revelar quién está registrado.
+  const claveIntentos = (correo) => correo.toLowerCase()
+
+  function minutosDeBloqueo(registro) {
+    return Math.max(1, Math.ceil((registro.bloqueado_hasta - ahora()) / 60_000))
+  }
+
+  function exigirSinBloqueo(correo) {
+    const registro = q.intentosDe.get(claveIntentos(correo))
+    if (registro && registro.bloqueado_hasta > ahora()) {
+      falla(
+        429,
+        `Demasiados intentos fallidos. Espera ${minutosDeBloqueo(registro)} minutos o recupera tu contraseña.`,
+      )
+    }
+  }
+
+  // Devuelve true si este fallo acaba de bloquear el correo.
+  function contarFallo(correo) {
+    const clave = claveIntentos(correo)
+    const previo = q.intentosDe.get(clave)
+    const vigente = previo && ahora() - previo.primer_fallo < VENTANA_FALLOS_MS
+    const fallos = vigente ? previo.fallos + 1 : 1
+    const primerFallo = vigente ? previo.primer_fallo : ahora()
+    if (fallos >= MAX_FALLOS_LOGIN) {
+      q.guardarIntentos.run(clave, 0, ahora(), ahora() + BLOQUEO_LOGIN_MS)
+      return true
+    }
+    q.guardarIntentos.run(clave, fallos, primerFallo, 0)
+    return false
+  }
+
+  const limpiarIntentos = (correo) => q.borrarIntentos.run(claveIntentos(correo))
+
   async function guardarClave(usuarioId, password) {
     const clave = await cifrar(password, iteraciones)
     q.actualizarClave.run(clave.sal, clave.hash, clave.iteraciones, usuarioId)
@@ -194,15 +238,35 @@ export function crearApp({
         ? next()
         : next(new ErrorHttp(403, 'No tienes permiso para hacer esto.'))
 
+  // Para que el servicio de publicación compruebe que el servidor está vivo.
+  app.get('/api/salud', (req, res) => {
+    res.json({ ok: true })
+  })
+
   // ---------- Sesión ----------
   app.post('/api/login', async (req, res) => {
     const correo = texto(req.body?.correo)
     const password = typeof req.body?.password === 'string' ? req.body.password : ''
+    q.borrarIntentosViejos.run(ahora(), ahora() - VENTANA_FALLOS_MS)
+    exigirSinBloqueo(correo)
     const usuario = q.usuarioPorCorreo.get(correo)
     const valido = usuario
       ? await verificar(password, usuario)
       : await verificacionFalsa(password, iteraciones)
-    if (!valido) falla(401, 'Correo o contraseña incorrectos.')
+    if (!valido) {
+      if (contarFallo(correo)) {
+        if (usuario) {
+          anotar(
+            'Sistema',
+            'Acceso bloqueado temporalmente',
+            `${usuario.nombre}: ${MAX_FALLOS_LOGIN} intentos fallidos`,
+          )
+        }
+        exigirSinBloqueo(correo)
+      }
+      falla(401, 'Correo o contraseña incorrectos.')
+    }
+    limpiarIntentos(correo)
     if (usuario.activo !== 1) {
       falla(403, 'Tu cuenta está desactivada. Contacta al administrador.')
     }
@@ -336,6 +400,7 @@ export function crearApp({
       const password = validarPassword(req.body?.password)
       await guardarClave(objetivo.id, password)
       q.borrarSesionesDe.run(objetivo.id)
+      limpiarIntentos(objetivo.correo)
       anotar(req.usuario.nombre, 'Contraseña restablecida', objetivo.nombre)
       res.json({ ok: true })
     },
@@ -488,6 +553,7 @@ export function crearApp({
     q.borrarRecuperacion.run(usuario.id)
     await guardarClave(usuario.id, nueva)
     q.borrarSesionesDe.run(usuario.id)
+    limpiarIntentos(usuario.correo)
     anotar(usuario.nombre, 'Contraseña recuperada', usuario.nombre)
     res.json({ mensaje: 'Tu contraseña se actualizó. Ya puedes iniciar sesión.' })
   })
