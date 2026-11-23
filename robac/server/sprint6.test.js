@@ -119,3 +119,62 @@ describe('HU25 · respaldos de la base de datos', () => {
     expect(quedan[6]).toBe('robac-20261109-000000.db')
   })
 })
+
+describe('HU27 · bitácora con filtros y páginas', () => {
+  async function conMovimientos() {
+    srv = await crearServidorDePrueba()
+    const insertar = srv.db.prepare(
+      'INSERT INTO bitacora (fecha, actor, accion, detalle) VALUES (?, ?, ?, ?)',
+    )
+    insertar.run('2026-11-01T15:00:00.000Z', 'Gustavo Guardia', 'Entrada registrada', 'Pedro Pérez')
+    insertar.run(
+      '2026-11-10T15:00:00.000Z',
+      'Rosa Residente',
+      'Visita autorizada',
+      'Lucía 100% puntual',
+    )
+    insertar.run('2026-11-20T15:00:00.000Z', 'Gustavo Guardia', 'Salida registrada', 'Pedro Pérez')
+    for (let i = 0; i < 120; i += 1)
+      insertar.run('2026-11-25T15:00:00.000Z', 'Sistema', 'Prueba', `n${i}`)
+    return (await login('guardia@robac.mx', 'guardia123')).datos.token
+  }
+
+  it('filtra por rango de fechas', async () => {
+    const token = await conMovimientos()
+    const r = await pedir(
+      '/bitacora?desde=2026-11-05T00:00:00.000Z&hasta=2026-11-21T00:00:00.000Z',
+      { token },
+    )
+    expect(r.datos.movimientos.map((m) => m.accion)).toEqual([
+      'Salida registrada',
+      'Visita autorizada',
+    ])
+    expect(r.datos.total).toBe(2)
+  })
+
+  it('busca en quién, acción y detalle, y toma % como texto', async () => {
+    const token = await conMovimientos()
+    const pedro = await pedir('/bitacora?buscar=pedro', { token })
+    expect(pedro.datos.total).toBe(2)
+    const porcentaje = await pedir(`/bitacora?buscar=${encodeURIComponent('100%')}`, { token })
+    expect(porcentaje.datos.movimientos.map((m) => m.detalle)).toEqual(['Lucía 100% puntual'])
+    expect((await pedir('/bitacora?buscar=%25', { token })).datos.total).toBe(1)
+  })
+
+  it('pagina de 50 en 50 y ajusta una página fuera de rango', async () => {
+    const token = await conMovimientos()
+    const tercera = await pedir('/bitacora?pagina=3', { token })
+    // 3 + 120 + 1 inicio de sesión = 124 movimientos
+    expect(tercera.datos).toMatchObject({ total: 124, pagina: 3, paginas: 3 })
+    expect(tercera.datos.movimientos).toHaveLength(24)
+    expect((await pedir('/bitacora?pagina=99', { token })).datos.pagina).toBe(3)
+    expect((await pedir('/bitacora?pagina=abc', { token })).datos.pagina).toBe(1)
+  })
+
+  it('rechaza una fecha de filtro inválida', async () => {
+    const token = await conMovimientos()
+    const r = await pedir('/bitacora?desde=ayer', { token })
+    expect(r.estado).toBe(400)
+    expect(r.datos.error).toMatch(/fecha/)
+  })
+})

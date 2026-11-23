@@ -3,18 +3,18 @@ import { guardarToken, leerToken, pedir } from '../api/client'
 
 const AppContext = createContext(null)
 
-const DATOS_VACIOS = { usuarios: [], roles: [], visitas: [], bitacora: [] }
+const DATOS_VACIOS = { usuarios: [], roles: [], visitas: [] }
 
 // Cada pantalla pide solo lo que el rol de la persona le permite ver.
+// La bitácora no se carga aquí: su pantalla la pide por páginas y con filtros.
 async function cargarDatos(permisos) {
   const tiene = (...lista) => lista.some((p) => permisos.includes(p))
-  const [usuarios, roles, visitas, bitacora] = await Promise.all([
+  const [usuarios, roles, visitas] = await Promise.all([
     tiene('usuarios.ver') ? pedir('/usuarios') : [],
     tiene('usuarios.ver', 'roles.gestionar') ? pedir('/roles') : [],
     tiene('visitas.autorizar', 'visitas.registrar') ? pedir('/visitas') : [],
-    tiene('bitacora.ver') ? pedir('/bitacora') : [],
   ])
-  return { usuarios, roles, visitas, bitacora }
+  return { usuarios, roles, visitas }
 }
 
 export function AppProvider({ children }) {

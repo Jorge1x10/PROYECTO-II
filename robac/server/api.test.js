@@ -433,23 +433,25 @@ describe('Bitácora', () => {
     })
     const r = await pedir('/bitacora', { token: admin })
     expect(r.estado).toBe(200)
-    expect(r.datos[0]).toMatchObject({
+    const { movimientos } = r.datos
+    expect(movimientos[0]).toMatchObject({
       actor: 'Ana Administradora',
       accion: 'Usuario creado',
       detalle: 'Luis Nuevo (residente)',
     })
-    expect(r.datos.map((b) => b.accion)).toContain('Inicio de sesión')
-    expect(Date.parse(r.datos[0].fecha)).not.toBeNaN()
+    expect(movimientos.map((b) => b.accion)).toContain('Inicio de sesión')
+    expect(Date.parse(movimientos[0].fecha)).not.toBeNaN()
   })
 
-  it('muestra como máximo los últimos 200 movimientos', async () => {
+  it('entrega los movimientos de 50 en 50', async () => {
     const insertar = srv.db.prepare(
       'INSERT INTO bitacora (fecha, actor, accion, detalle) VALUES (?, ?, ?, ?)',
     )
     for (let i = 0; i < 250; i += 1) insertar.run(new Date().toISOString(), 'Sistema', 'Prueba', `n${i}`)
     const admin = await entrarAdmin()
     const r = await pedir('/bitacora', { token: admin })
-    expect(r.datos).toHaveLength(200)
+    expect(r.datos.movimientos).toHaveLength(50)
+    expect(r.datos).toMatchObject({ total: 251, pagina: 1, paginas: 6 })
   })
 })
 

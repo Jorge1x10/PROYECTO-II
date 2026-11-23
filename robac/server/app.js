@@ -23,7 +23,7 @@ const MAX_INTENTOS = 5
 const MAX_FALLOS_LOGIN = 5
 const VENTANA_FALLOS_MS = 15 * 60 * 1000
 const BLOQUEO_LOGIN_MS = 15 * 60 * 1000
-const MAX_BITACORA_VISTA = 200
+const BITACORA_POR_PAGINA = 50
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const FECHA_VALIDA = /^\d{4}-\d{2}-\d{2}$/
 
@@ -110,8 +110,19 @@ export function crearApp({
        VALUES (?, ?, ?, ?, 'autorizada')`,
     ),
     estadoVisita: db.prepare('UPDATE visitas SET estado = ? WHERE id = ?'),
+    // Filtros opcionales: cada uno se ignora cuando su valor es NULL.
     bitacora: db.prepare(
-      'SELECT id, fecha, actor, accion, detalle FROM bitacora ORDER BY id DESC LIMIT ?',
+      `SELECT id, fecha, actor, accion, detalle FROM bitacora
+       WHERE (:desde IS NULL OR fecha >= :desde)
+         AND (:hasta IS NULL OR fecha < :hasta)
+         AND (:buscar IS NULL OR actor || ' ' || accion || ' ' || detalle LIKE :buscar ESCAPE '\\')
+       ORDER BY id DESC LIMIT :limite OFFSET :salto`,
+    ),
+    contarBitacora: db.prepare(
+      `SELECT COUNT(*) AS n FROM bitacora
+       WHERE (:desde IS NULL OR fecha >= :desde)
+         AND (:hasta IS NULL OR fecha < :hasta)
+         AND (:buscar IS NULL OR actor || ' ' || accion || ' ' || detalle LIKE :buscar ESCAPE '\\')`,
     ),
     anotar: db.prepare('INSERT INTO bitacora (fecha, actor, accion, detalle) VALUES (?, ?, ?, ?)'),
     recuperacionDe: db.prepare('SELECT * FROM recuperaciones WHERE usuario_id = ?'),
@@ -498,8 +509,32 @@ export function crearApp({
   )
 
   // ---------- Bitácora ----------
+  // Las fechas llegan como instantes ISO: la pantalla convierte el día local de la persona.
+  function instante(valor) {
+    const crudo = texto(valor)
+    if (!crudo) return null
+    const ms = Date.parse(crudo)
+    if (Number.isNaN(ms)) falla(400, 'La fecha del filtro no es válida.')
+    return new Date(ms).toISOString()
+  }
+
   app.get('/api/bitacora', autenticar, exigir('bitacora.ver'), (req, res) => {
-    res.json(q.bitacora.all(MAX_BITACORA_VISTA))
+    const buscar = texto(req.query.buscar)
+    const filtros = {
+      desde: instante(req.query.desde),
+      hasta: instante(req.query.hasta),
+      buscar: buscar ? `%${buscar.replace(/[\\%_]/g, '\\$&')}%` : null,
+    }
+    const total = q.contarBitacora.get(filtros).n
+    const paginas = Math.max(1, Math.ceil(total / BITACORA_POR_PAGINA))
+    const pedida = Number.parseInt(req.query.pagina, 10)
+    const pagina = Math.min(Math.max(1, Number.isNaN(pedida) ? 1 : pedida), paginas)
+    const movimientos = q.bitacora.all({
+      ...filtros,
+      limite: BITACORA_POR_PAGINA,
+      salto: (pagina - 1) * BITACORA_POR_PAGINA,
+    })
+    res.json({ movimientos, total, pagina, paginas })
   })
 
   // ---------- Recuperación de contraseña ----------

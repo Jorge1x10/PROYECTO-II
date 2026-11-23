@@ -52,7 +52,7 @@ describe('Límite de intentos fallidos de inicio de sesión', () => {
 
     const admin = (await login('admin@robac.mx', 'admin123')).datos.token
     const bitacora = await pedir('/bitacora', { token: admin })
-    expect(bitacora.datos[1]).toMatchObject({
+    expect(bitacora.datos.movimientos[1]).toMatchObject({
       actor: 'Sistema',
       accion: 'Acceso bloqueado temporalmente',
       detalle: 'Gustavo Guardia: 5 intentos fallidos',
