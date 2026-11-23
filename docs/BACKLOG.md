@@ -1,6 +1,6 @@
 # Backlog de ROBAC
 
-Actualizado el 23 de noviembre de 2026, con las propuestas para la revisión final (Actividad 6).
+Actualizado el 23 de noviembre de 2026, con los cambios del Sprint 6 (Actividad 7).
 Repositorio: <https://github.com/Jorge1x10/PROYECTO-II>
 
 ## Historias de usuario
@@ -28,21 +28,19 @@ Repositorio: <https://github.com/Jorge1x10/PROYECTO-II>
 | **HU19** | **Preparar el sistema para publicarse (variables de entorno, ruta de salud, `.gitignore`)** | **5** | **Terminada** |
 | HU20 | Publicar el sistema en un servidor con correo real | 6 | Pendiente: requiere la cuenta del servicio de publicación y del correo del equipo |
 
-Resumen: 20 historias, 19 terminadas, 1 pendiente.
+## Sprint 6: revisión final (Actividad 7)
 
-## Propuestas para la revisión final (Actividad 6)
-
-Se validan con el Product Owner en la reunión de arranque del 24 de noviembre de 2026.
-
-| HU | Propuesta | Prioridad | Estado |
+| HU | Historia | Prioridad | Estado |
 | --- | --- | --- | --- |
-| HU21 | Unir a la rama `main` la última versión | Alta | Propuesta |
-| HU22 | Crear el primer administrador con variables de entorno y no cargar las cuentas de prueba al publicar | Alta | Propuesta |
-| HU23 | Correr las pruebas en GitHub Actions en cada cambio | Media | Propuesta |
-| HU24 | Quitar de la raíz la copia de los Sprint 1 a 3 | Media | Propuesta |
-| HU25 | Respaldar la base de datos SQLite | Media | Propuesta |
-| HU26 | Manual de usuario breve por rol | Media | Propuesta |
-| HU27 | Filtrar la bitácora por fechas y paginarla | Baja | Propuesta |
+| HU21 | Unir a la rama `main` la última versión | Alta | Pendiente: falta aprobar el pull request |
+| HU22 | Primer administrador sin cuentas de prueba | Alta | Terminada |
+| HU23 | Pruebas en GitHub Actions en cada cambio | Media | Terminada |
+| HU24 | Quitar de la raíz la copia de los Sprint 1 a 3 | Media | Terminada |
+| HU25 | Respaldos de la base de datos | Media | Terminada |
+| HU26 | Manual de usuario por rol (`docs/MANUAL_USUARIO.md`) | Media | Terminada |
+| HU27 | Bitácora con filtros por fecha, búsqueda y páginas | Baja | Terminada |
+
+Resumen: 27 historias, 25 terminadas, 2 pendientes (HU20 y HU21).
 
 ## Pruebas automáticas por Sprint
 
@@ -52,6 +50,7 @@ Se validan con el Product Owner en la reunión de arranque del 24 de noviembre d
 | 3 | 15 |
 | 4 | 52 |
 | 5 | 66 |
+| 6 | 79 |
 
 ## Cambios del Sprint 5 en GitHub
 
@@ -60,3 +59,15 @@ Se validan con el Product Owner en la reunión de arranque del 24 de noviembre d
 | 11/11/2026 | [9b83275](https://github.com/Jorge1x10/PROYECTO-II/commit/9b83275) | HU18 | `robac/server/correo.js`: envío del código por SMTP con STARTTLS o TLS |
 | 11/11/2026 | [d6c1173](https://github.com/Jorge1x10/PROYECTO-II/commit/d6c1173) | HU17, HU19 | Bloqueo tras 5 intentos fallidos, ruta `/api/salud` y 14 pruebas nuevas |
 | 11/11/2026 | [3ca727a](https://github.com/Jorge1x10/PROYECTO-II/commit/3ca727a) | HU19 | `.gitignore`, `.env.example` y README con el Sprint 5 |
+
+## Cambios del Sprint 6 en GitHub
+
+| Fecha | Commit | Historia | Cambio |
+| --- | --- | --- | --- |
+| 23/11/2026 | [4fa1830](https://github.com/Jorge1x10/PROYECTO-II/commit/4fa1830) | HU22 | Primer administrador por variables de entorno; producción sin cuentas de prueba |
+| 23/11/2026 | [a0381fd](https://github.com/Jorge1x10/PROYECTO-II/commit/a0381fd) | HU25 | Respaldos automáticos y `npm run respaldo` |
+| 23/11/2026 | [c7c5c14](https://github.com/Jorge1x10/PROYECTO-II/commit/c7c5c14) | HU27 | Bitácora con filtros, búsqueda y páginas |
+| 23/11/2026 | [8da5e40](https://github.com/Jorge1x10/PROYECTO-II/commit/8da5e40) | HU23 | Flujo de GitHub Actions |
+| 23/11/2026 | [40a83c4](https://github.com/Jorge1x10/PROYECTO-II/commit/40a83c4) | HU24 | Se quita la copia de los Sprint 1 a 3 |
+| 23/11/2026 | [68e7add](https://github.com/Jorge1x10/PROYECTO-II/commit/68e7add) | HU26 | Manual de usuario |
+| 23/11/2026 | [32f6ac4](https://github.com/Jorge1x10/PROYECTO-II/commit/32f6ac4) | — | README y `.env.example` del Sprint 6 |
