@@ -11,8 +11,9 @@ residenciales, desarrollado en React con un servidor en Node (Express y SQLite).
 | `docs/` | Documentos de las actividades: avances, segundo y tercer progreso, reporte final, bitácora de la reunión de revisión (Actividad 5) y bitácora de la revisión de los proyectos del equipo (Actividad 6), con el backlog actualizado en [`docs/BACKLOG.md`](docs/BACKLOG.md) |
 | `Calendario_Reuniones_SCRUM.pdf` | Calendario de las reuniones Scrum |
 
-Los archivos `src/`, `package.json` y los demás que están en la raíz son la copia de los
-Sprint 1 a 3, anterior al servidor, y se conservan solo como historial.
+La copia de los Sprint 1 a 3 (anterior al servidor) que estaba en la raíz se quitó en el
+Sprint 6 para no confundirla con la versión final. Sigue disponible en el historial de
+GitHub, en el commit `384a807`.
 
 ## Cómo ejecutar la versión final
 
