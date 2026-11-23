@@ -1,6 +1,6 @@
 # Backlog de ROBAC
 
-Actualizado el 11 de noviembre de 2026, en la reunión de revisión (Actividad 5).
+Actualizado el 23 de noviembre de 2026, con las propuestas para la revisión final (Actividad 6).
 Repositorio: <https://github.com/Jorge1x10/PROYECTO-II>
 
 ## Historias de usuario
@@ -29,6 +29,20 @@ Repositorio: <https://github.com/Jorge1x10/PROYECTO-II>
 | HU20 | Publicar el sistema en un servidor con correo real | 6 | Pendiente: requiere la cuenta del servicio de publicación y del correo del equipo |
 
 Resumen: 20 historias, 19 terminadas, 1 pendiente.
+
+## Propuestas para la revisión final (Actividad 6)
+
+Se validan con el Product Owner en la reunión de arranque del 24 de noviembre de 2026.
+
+| HU | Propuesta | Prioridad | Estado |
+| --- | --- | --- | --- |
+| HU21 | Unir el Sprint 5 a la rama `main` | Alta | Propuesta |
+| HU22 | Crear el primer administrador con variables de entorno y no cargar las cuentas de prueba al publicar | Alta | Propuesta |
+| HU23 | Correr las pruebas en GitHub Actions en cada cambio | Media | Propuesta |
+| HU24 | Quitar de la raíz la copia de los Sprint 1 a 3 | Media | Propuesta |
+| HU25 | Respaldar la base de datos SQLite | Media | Propuesta |
+| HU26 | Manual de usuario breve por rol | Media | Propuesta |
+| HU27 | Filtrar la bitácora por fechas y paginarla | Baja | Propuesta |
 
 ## Pruebas automáticas por Sprint
 
