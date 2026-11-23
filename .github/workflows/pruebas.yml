@@ -1,0 +1,33 @@
+# Corre el lint, las pruebas y la compilación de ROBAC en cada cambio.
+name: Pruebas de ROBAC
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: robac
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: robac/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npx oxlint src server
+
+      - name: Pruebas automáticas
+        run: npm test
+
+      - name: Compilación
+        run: npm run build
