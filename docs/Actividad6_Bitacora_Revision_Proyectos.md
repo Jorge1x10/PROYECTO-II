@@ -4,148 +4,126 @@ author: "Jorge Arturo Alvarado Díaz de León"
 date: "23 de noviembre de 2026"
 ---
 
-## Resumen
-
-El equipo Scrum de 3 integrantes (Jorge Alvarado, Compañero B y Compañero C) entra a la última unidad del curso con un sistema por integrante. Esta bitácora planea la revisión final de los tres antes de liberarlos para su uso. Para cada sistema se toma su último backlog y su última versión en GitHub, se proponen las modificaciones que faltan para terminarlo y se fija un calendario de cuatro reuniones con el rol de cada participante.
-
-Para no cambiar de reglas al final del curso, los roles son los mismos que el equipo acordó en el calendario Scrum del 5 de octubre (`Calendario_Reuniones_SCRUM.pdf`).
-
-## 1. Reunión de arranque
-
 | Dato | Detalle |
 | --- | --- |
-| Fecha | Martes 24 de noviembre de 2026, 19:00 a 20:00 (hora del centro de México) |
-| Modalidad | Videollamada en Google Meet; convocatoria y enlaces por el canal del equipo en Discord |
-| Convoca | Jorge Alvarado (convocatoria enviada el 23 de noviembre) |
-| Qué traer | De cada sistema: el enlace de GitHub, el último commit y el backlog actualizado |
-| Objetivo | Revisar los tres sistemas, acordar las modificaciones de cada uno y aprobar el calendario de la sección 4 |
+| Equipo | Jorge Alvarado, Compañero B y Compañero C (equipo Scrum de 3 integrantes) |
+| Proyecto de Jorge | ROBAC: control de acceso basado en roles para comunidades privadas (React, Node y SQLite) |
+| Liga de GitHub | <https://github.com/Jorge1x10/PROYECTO-II/tree/claude/busy-carson-vq447d> |
+| Objetivo | Revisar los proyectos del equipo, acordar los cambios que faltan y liberarlos el 4 de diciembre de 2026 |
 
-### Agenda (60 minutos)
+## 1. Bitácora
 
-| Bloque | Sistema | Tiempo |
-| --- | --- | --- |
-| 1 | ROBAC (Dev: Jorge Alvarado) | 20 min |
-| 2 | Sistema de Compañero B | 20 min |
-| 3 | Sistema de Compañero C | 20 min |
+### Reunión de arranque
 
-En cada bloque, el Desarrollador muestra el backlog y la última versión de GitHub, el Product Owner prioriza las propuestas y el Scrum Master las anota en esta bitácora.
+Martes 24 de noviembre de 2026, de 19:00 a 20:00, por videollamada en Google Meet. Los avisos van por el canal del equipo en Discord. La reunión se divide en tres bloques de 20 minutos, uno por proyecto. En cada bloque, el Desarrollador muestra su último backlog y su última versión de GitHub, el Product Owner prioriza los cambios y el Scrum Master los anota.
 
-## 2. Revisión de los proyectos
+### Calendario de reuniones
 
-### Sistema de Jorge Alvarado: ROBAC
-
-| Dato | Detalle |
-| --- | --- |
-| Descripción | Control de acceso basado en roles para comunidades privadas, cotos y residenciales (React, Node, Express y SQLite) |
-| Repositorio | <https://github.com/Jorge1x10/PROYECTO-II> |
-| Última versión | Commit `8e9412c` del 11 de noviembre de 2026, en la rama `claude/busy-carson-vq447d` |
-| Versión en `main` | Commit `384a807` del 28 de octubre de 2026: todavía no incluye el Sprint 5 |
-| Backlog | 20 historias: 19 terminadas y 1 pendiente (HU20, publicar el sistema). Detalle en `docs/BACKLOG.md` |
-| Pruebas | 66 pruebas automáticas, todas pasan |
-| Estado | Funciona completo en local; falta publicarlo y cerrar los puntos de seguridad de la sección 3 |
-
-### Sistema de Compañero B
-
-| Dato | Detalle |
-| --- | --- |
-| Descripción | *[Por completar por Compañero B]* |
-| Repositorio | *[Enlace de GitHub]* |
-| Última versión | *[Commit y fecha]* |
-| Backlog | *[Historias terminadas y pendientes]* |
-| Estado | *[Por completar]* |
-
-### Sistema de Compañero C
-
-| Dato | Detalle |
-| --- | --- |
-| Descripción | *[Por completar por Compañero C]* |
-| Repositorio | *[Enlace de GitHub]* |
-| Última versión | *[Commit y fecha]* |
-| Backlog | *[Historias terminadas y pendientes]* |
-| Estado | *[Por completar]* |
-
-## 3. Propuestas de modificaciones
-
-### ROBAC
-
-| HU | Propuesta | Por qué | Prioridad | Se revisa en |
+| # | Fecha (19:00, Meet) | Reunión | Objetivo | Minuta general |
 | --- | --- | --- | --- | --- |
-| HU21 | Unir el Sprint 5 a la rama `main` | `main` se quedó en el 28 de octubre; quien abra el repositorio no ve el correo ni el bloqueo de intentos | Alta | R2 |
-| HU22 | Crear el primer administrador con variables de entorno y no cargar las cuentas de prueba al publicar | Hoy la base nueva trae cuentas con contraseñas conocidas (`admin123`) y la pantalla de inicio las muestra | Alta | R2 |
-| HU20 | Publicar el sistema con un servidor de correo real | Única historia pendiente del backlog; sin ella nadie puede usar el sistema fuera de la computadora del desarrollador | Alta | R3 |
-| HU23 | Correr las pruebas en GitHub Actions en cada cambio | Hoy las pruebas solo se corren a mano; así ningún cambio llega a `main` sin pasar las 66 | Media | R3 |
-| HU24 | Quitar de la raíz la copia de los Sprint 1 a 3 (`src/`, `package.json` y demás) | Hay dos proyectos en el repositorio y se presta a ejecutar la versión vieja | Media | R2 |
-| HU25 | Respaldar la base de datos SQLite | Si se pierde el archivo `robac.db` se pierden usuarios, visitas y bitácora | Media | R3 |
-| HU26 | Manual de usuario breve por rol (administrador, guardia, residente) | Hace falta para liberar el sistema a personas que no lo conocen | Media | R4 |
+| R1 | Martes 24 nov | Arranque | Revisar backlog y GitHub de los tres proyectos y acordar los cambios | Jorge Alvarado |
+| R2 | Viernes 27 nov | Seguimiento 1 | Revisar los cambios de prioridad alta y los bloqueos | Compañero C |
+| R3 | Martes 1 dic | Seguimiento 2 | Pruebas cruzadas (cada PO prueba el proyecto que prioriza) y cambios de prioridad media | Compañero B |
+| R4 | Viernes 4 dic | Revisión final | Aceptar cada proyecto, confirmar la versión final en GitHub y hacer la retrospectiva | Jorge Alvarado |
+
+### Registro
+
+| Fecha | Actividad | Resultado | Registra |
+| --- | --- | --- | --- |
+| 23 nov | Preparación | Se revisó ROBAC: backlog con 19 de 20 historias terminadas, última versión en GitHub (commit `8e9412c`, Sprint 5) y 66 pruebas que pasan. Se redactaron las propuestas HU21 a HU27 | Jorge Alvarado |
+| 24 nov | R1 Arranque | *[Por completar después de la reunión]* | Jorge Alvarado |
+| 27 nov | R2 Seguimiento 1 | *[Por completar]* | Compañero C |
+| 1 dic | R3 Seguimiento 2 | *[Por completar]* | Compañero B |
+| 4 dic | R4 Revisión final | *[Por completar]* | Jorge Alvarado |
+
+## 2. Propuestas de modificaciones
+
+### ROBAC (Jorge Alvarado)
+
+| HU | Propuesta | Motivo | Prioridad | Reunión |
+| --- | --- | --- | --- | --- |
+| HU21 | Unir a la rama `main` la última versión | `main` se quedó en el 28 de octubre y no muestra los últimos cambios | Alta | R2 |
+| HU22 | Crear el primer administrador con variables de entorno y no cargar las cuentas de prueba al publicar | Hoy la base nueva trae contraseñas conocidas (`admin123`) | Alta | R2 |
+| HU20 | Publicar el sistema con un servidor de correo real | Es la única historia pendiente; sin ella el sistema solo corre en local | Alta | R3 |
+| HU23 | Correr las 66 pruebas en GitHub Actions en cada cambio | Hoy las pruebas solo se corren a mano | Media | R3 |
+| HU24 | Quitar de la raíz la copia de los Sprint 1 a 3 | Hay dos proyectos en el repositorio y se puede ejecutar el viejo por error | Media | R2 |
+| HU25 | Respaldar la base de datos SQLite | Si se pierde `robac.db` se pierden usuarios, visitas y bitácora | Media | R3 |
+| HU26 | Manual de usuario por rol | Lo necesita quien use el sistema por primera vez | Media | R4 |
 | HU27 | Filtrar la bitácora por fechas y paginarla | La pantalla solo muestra los últimos 200 movimientos | Baja | Si hay tiempo |
 
-Propone: Jorge Alvarado (Dev). Valida y prioriza: Compañero B (PO de ROBAC) en la reunión de arranque.
+### Proyecto de Compañero B
 
-### Sistema de Compañero B
-
-| HU | Propuesta | Por qué | Prioridad | Se revisa en |
+| HU | Propuesta | Motivo | Prioridad | Reunión |
 | --- | --- | --- | --- | --- |
-| *[ ]* | *[Por completar en la reunión de arranque]* | *[ ]* | *[ ]* | *[ ]* |
+| *[ ]* | *[Por completar en R1]* | *[ ]* | *[ ]* | *[ ]* |
 
-### Sistema de Compañero C
+### Proyecto de Compañero C
 
-| HU | Propuesta | Por qué | Prioridad | Se revisa en |
+| HU | Propuesta | Motivo | Prioridad | Reunión |
 | --- | --- | --- | --- | --- |
-| *[ ]* | *[Por completar en la reunión de arranque]* | *[ ]* | *[ ]* | *[ ]* |
+| *[ ]* | *[Por completar en R1]* | *[ ]* | *[ ]* | *[ ]* |
 
-## 4. Calendario de reuniones
+## 3. Back log
 
-Todas son virtuales (Google Meet), duran 1 hora y se dividen en tres bloques de 20 minutos, uno por sistema.
+### ROBAC (actualizado al 23 de noviembre de 2026)
 
-| # | Fecha | Reunión | Objetivo | Responsable de la minuta general |
-| --- | --- | --- | --- | --- |
-| R1 | Martes 24 nov 2026, 19:00 | Arranque de la revisión | Revisar backlog y GitHub de los tres sistemas, acordar las propuestas y aprobar este calendario | Jorge Alvarado |
-| R2 | Viernes 27 nov 2026, 19:00 | Seguimiento 1 | Revisar las modificaciones de prioridad alta y los bloqueos | Compañero C |
-| R3 | Martes 1 dic 2026, 19:00 | Seguimiento 2 y pruebas cruzadas | Cada integrante prueba el sistema de otro según su rol de PO; revisar las modificaciones de prioridad media | Compañero B |
-| R4 | Viernes 4 dic 2026, 19:00 | Revisión final y liberación | Aceptar o rechazar cada sistema, confirmar que `main` tiene la última versión y hacer la retrospectiva final | Jorge Alvarado |
+| HU | Historia de usuario | Sprint | Estado |
+| --- | --- | --- | --- |
+| HU1 | Iniciar sesión con correo y contraseña | 1 | Terminada |
+| HU2 | Catálogo de permisos y tres roles | 1 | Terminada |
+| HU3 | Rutas protegidas por permiso | 1 | Terminada |
+| HU4 | Menú con solo las secciones del rol | 1 | Terminada |
+| HU5 | Pantalla de inicio con el rol del usuario | 1 | Terminada |
+| HU6 | Crear, cambiar de rol y desactivar usuarios | 2 | Terminada |
+| HU7 | Matriz de permisos por rol | 2 | Terminada |
+| HU8 | El residente autoriza visitas | 2 | Terminada |
+| HU9 | El guardia registra entrada y salida | 2 | Terminada |
+| HU10 | Bitácora con búsqueda | 2 | Terminada |
+| HU11 | Servidor y base de datos | 4 | Terminada |
+| HU12 | Contraseñas cifradas | 3 | Terminada |
+| HU13 | Editar los datos de un usuario | 3 | Terminada |
+| HU14 | Cambiar la propia contraseña | 3 | Terminada |
+| HU15 | El administrador restablece contraseñas | 3 | Terminada |
+| HU16 | Recuperar la contraseña con un código | 4 | Terminada |
+| HU17 | Bloqueo tras 5 intentos fallidos | 5 | Terminada |
+| HU18 | Código de recuperación por correo | 5 | Terminada |
+| HU19 | Preparar el sistema para publicarse | 5 | Terminada |
+| HU20 | Publicar el sistema | 6 | Pendiente (alta) |
+| HU21 | Unir los cambios a `main` | 6 | Propuesta (alta) |
+| HU22 | Primer administrador sin cuentas de prueba | 6 | Propuesta (alta) |
+| HU23 | Pruebas en GitHub Actions | 6 | Propuesta (media) |
+| HU24 | Quitar la copia de los Sprint 1 a 3 | 6 | Propuesta (media) |
+| HU25 | Respaldo de la base de datos | 6 | Propuesta (media) |
+| HU26 | Manual de usuario por rol | 6 | Propuesta (media) |
+| HU27 | Filtro por fechas en la bitácora | 6 | Propuesta (baja) |
 
-Si una reunión se cae, se repite al día siguiente a la misma hora. El responsable de la minuta general avisa en el canal del equipo.
+Avance: 19 de 27 historias terminadas.
 
-## 5. Rol de cada participante
+### Proyectos de Compañero B y Compañero C
 
-### Roles por sistema (se mantienen en las cuatro reuniones)
+| Proyecto | Último backlog | Última versión en GitHub |
+| --- | --- | --- |
+| Compañero B | *[Historias terminadas y pendientes]* | *[Liga y commit]* |
+| Compañero C | *[Historias terminadas y pendientes]* | *[Liga y commit]* |
 
-| Sistema | Desarrollador | Product Owner | Scrum Master |
+## 4. Reporte de roles
+
+Los roles son los mismos del calendario Scrum del 5 de octubre y se mantienen en las cuatro reuniones. Cada integrante desarrolla su proyecto, prioriza el de un compañero y documenta la revisión de otro.
+
+| Proyecto | Desarrollador | Product Owner | Scrum Master |
 | --- | --- | --- | --- |
 | ROBAC | Jorge Alvarado | Compañero B | Compañero C |
-| Sistema de Compañero B | Compañero B | Compañero C | Jorge Alvarado |
-| Sistema de Compañero C | Compañero C | Jorge Alvarado | Compañero B |
+| Proyecto de Compañero B | Compañero B | Compañero C | Jorge Alvarado |
+| Proyecto de Compañero C | Compañero C | Jorge Alvarado | Compañero B |
 
-Así, cada integrante desarrolla su sistema, prioriza el de un compañero y documenta la revisión del otro.
+| Rol | Responsabilidad en la revisión |
+| --- | --- |
+| Desarrollador | Sube la última versión a GitHub, actualiza su backlog, presenta su proyecto y hace los cambios acordados (un commit por historia) |
+| Product Owner | Prueba el proyecto, prioriza las propuestas, acepta o rechaza lo entregado y actualiza el backlog |
+| Scrum Master | Controla los 20 minutos del bloque, pregunta por bloqueos y escribe la minuta en esta bitácora |
 
-### Qué hace cada rol en la revisión
+## 5. Liga de GitHub
 
-| Rol | Antes de la reunión | Durante la reunión | Después de la reunión |
-| --- | --- | --- | --- |
-| Desarrollador | Sube a GitHub la última versión y actualiza su backlog | Muestra el sistema funcionando y lo que cambió desde la reunión anterior | Hace las modificaciones acordadas, una historia por commit |
-| Product Owner | Revisa el backlog y prueba el sistema | Prioriza las propuestas y acepta o rechaza lo entregado | Registra en el backlog lo que se aceptó y lo que se pospuso |
-| Scrum Master | Confirma que el enlace de GitHub y el backlog estén al día | Controla los 20 minutos del bloque y pregunta por bloqueos | Escribe la minuta del bloque en esta bitácora (sección 6) |
-
-### Rol de Jorge Alvarado en cada sistema
-
-| Sistema | Rol | Qué documenta |
-| --- | --- | --- |
-| ROBAC | Desarrollador | Los cambios en GitHub y el backlog de ROBAC |
-| Sistema de Compañero B | Scrum Master | La minuta del bloque 2 en cada reunión |
-| Sistema de Compañero C | Product Owner | La priorización y la aceptación de las propuestas del sistema de Compañero C |
-
-## 6. Bitácora
-
-| Fecha | Reunión o actividad | Qué se hizo | Acuerdos y pendientes | Registra |
-| --- | --- | --- | --- | --- |
-| 23 nov 2026 | Preparación | Se revisó ROBAC: último backlog (19 de 20 historias), última versión en GitHub (`8e9412c`) y 66 pruebas que pasan. Se redactaron las propuestas HU21 a HU27 y este calendario | Enviar la convocatoria de R1 y pedir a cada integrante su enlace de GitHub y su backlog | Jorge Alvarado |
-| 24 nov 2026 | R1 Arranque | *[Por completar después de la reunión]* | *[ ]* | Jorge Alvarado |
-| 27 nov 2026 | R2 Seguimiento 1 | *[ ]* | *[ ]* | Compañero C |
-| 1 dic 2026 | R3 Seguimiento 2 | *[ ]* | *[ ]* | Compañero B |
-| 4 dic 2026 | R4 Revisión final | *[ ]* | *[ ]* | Jorge Alvarado |
-
-## 7. Repositorio en GitHub
-
-Repositorio del sistema ROBAC: <https://github.com/Jorge1x10/PROYECTO-II>
-
-Esta bitácora y el backlog actualizado con las propuestas HU21 a HU27 están en la carpeta `docs/` del repositorio.
+- Última versión de ROBAC y de esta bitácora: <https://github.com/Jorge1x10/PROYECTO-II/tree/claude/busy-carson-vq447d>
+- Repositorio: <https://github.com/Jorge1x10/PROYECTO-II> (la rama `main` se actualizará con la HU21)
+- Back log en el repositorio: `docs/BACKLOG.md`

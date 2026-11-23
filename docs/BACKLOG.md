@@ -36,7 +36,7 @@ Se validan con el Product Owner en la reunión de arranque del 24 de noviembre d
 
 | HU | Propuesta | Prioridad | Estado |
 | --- | --- | --- | --- |
-| HU21 | Unir el Sprint 5 a la rama `main` | Alta | Propuesta |
+| HU21 | Unir a la rama `main` la última versión | Alta | Propuesta |
 | HU22 | Crear el primer administrador con variables de entorno y no cargar las cuentas de prueba al publicar | Alta | Propuesta |
 | HU23 | Correr las pruebas en GitHub Actions en cada cambio | Media | Propuesta |
 | HU24 | Quitar de la raíz la copia de los Sprint 1 a 3 | Media | Propuesta |
