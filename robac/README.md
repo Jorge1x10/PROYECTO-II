@@ -21,10 +21,12 @@ npm start        # todo en http://127.0.0.1:3001
 ```
 
 La base de datos se crea sola en `data/robac.db` la primera vez, con los roles,
-los permisos y las cuentas de prueba. Para empezar de cero, borra esa carpeta.
+los permisos y las cuentas de prueba. Para empezar de cero, borra esa carpeta. Para usar
+ROBAC con personas reales, crea la base con tu propio administrador (ver Sprint 6).
 
 ```bash
-npm test         # 66 pruebas automáticas (Vitest)
+npm test         # 79 pruebas automáticas (Vitest)
+npm run respaldo # copia de la base de datos en data/respaldos
 npm run lint
 ```
 
@@ -45,15 +47,18 @@ server/
   db.js               Tablas de SQLite y carga de datos iniciales
   auth.js             Cifrado de contraseñas (PBKDF2), tokens y códigos
   correo.js           Envío del código de recuperación por SMTP (sin dependencias)
+  respaldo.js         Respaldos de la base de datos (VACUUM INTO, se conservan 7)
+  respaldar.js        Respaldo manual: npm run respaldo
   seed.js             Permisos, roles y cuentas de prueba
   api.test.js         32 pruebas de la API
   sprint5.test.js     13 pruebas del Sprint 5 (intentos fallidos y correo)
+  sprint6.test.js     10 pruebas del Sprint 6 (administrador, respaldos y bitácora)
 src/
   api/client.js       Cliente de la API (fetch y token de sesión)
   context/            Estado global de React: sesión y datos según el rol
   components/         Layout (menú por rol) y ProtectedRoute
   pages/              Login, Recuperar, Dashboard, Usuarios, Roles, Visitas, Bitácora, Mi cuenta
-  test/               21 pruebas de las pantallas, contra el servidor real
+  test/               24 pruebas de las pantallas, contra el servidor real
 ```
 
 ## Sprint 1: acceso y roles
@@ -124,9 +129,34 @@ Al arrancar, el servidor indica en la consola si los códigos van por SMTP o a l
 
 En un servicio de Node (por ejemplo Render o Railway): comando de compilación
 `npm ci && npm run build`, comando de inicio `npm start`, variables `HOST=0.0.0.0`,
-`PORT` (la que asigne el servicio), `ROBAC_DB` en un disco persistente y las variables
-`SMTP_*`. Verificación de salud: `/api/salud`. Antes de abrirlo a personas reales hay que
-cambiar las contraseñas de las cuentas de prueba.
+`PORT` (la que asigne el servicio), `ROBAC_DB` en un disco persistente, las variables
+`SMTP_*`, `NODE_ENV=production` y el primer administrador (`ROBAC_ADMIN_*`, ver Sprint 6).
+Verificación de salud: `/api/salud`.
+
+## Sprint 6: revisión final
+
+- **Primer administrador (HU22):** con `ROBAC_ADMIN_CORREO`, `ROBAC_ADMIN_CLAVE` (mínimo 8
+  caracteres) y opcionalmente `ROBAC_ADMIN_NOMBRE`, la base nueva se crea solo con ese
+  administrador, sin cuentas de prueba. Con `NODE_ENV=production` el servidor se niega a
+  arrancar sin administrador o con una base que tenga las cuentas de prueba. La pantalla de
+  inicio solo muestra las cuentas de prueba si existen.
+- **Pruebas en GitHub (HU23):** `.github/workflows/pruebas.yml` corre el lint, las pruebas y
+  la compilación en cada cambio que se sube.
+- **Repositorio limpio (HU24):** se quitó de la raíz la copia de los Sprint 1 a 3.
+- **Respaldos (HU25):** al arrancar y cada 24 horas se guarda una copia de la base en
+  `data/respaldos` y se conservan las últimas 7. `ROBAC_RESPALDO_HORAS=0` los desactiva y
+  `ROBAC_RESPALDOS` cambia la carpeta. Para restaurar, detén el servidor y copia el
+  respaldo sobre `robac.db`.
+- **Manual de usuario (HU26):** [`docs/MANUAL_USUARIO.md`](../docs/MANUAL_USUARIO.md).
+- **Bitácora con filtros (HU27):** búsqueda en todo el historial, rango de fechas y páginas
+  de 50 movimientos (`GET /api/bitacora?buscar=&desde=&hasta=&pagina=`).
+
+```bash
+ROBAC_ADMIN_CORREO=admin@micoto.mx ROBAC_ADMIN_CLAVE=una-clave-larga \
+ROBAC_ADMIN_NOMBRE="Laura Jefa" npm start
+```
+
+El administrador solo se usa al crear la base; si la base ya existe, no se modifica.
 
 ## Pendiente
 

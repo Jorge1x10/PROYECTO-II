@@ -7,7 +7,7 @@ residenciales, desarrollado en React con un servidor en Node (Express y SQLite).
 
 | Carpeta | Contenido |
 | --- | --- |
-| `robac/` | **Versión final del sistema (Sprint 1 a 5).** Aquí está el código vigente y su `README.md` con las instrucciones |
+| `robac/` | **Versión final del sistema (Sprint 1 a 6).** Aquí está el código vigente y su `README.md` con las instrucciones |
 | `docs/` | Documentos de las actividades: avances, segundo y tercer progreso, reporte final, bitácora de la reunión de revisión (Actividad 5) y bitácora de la revisión de los proyectos del equipo (Actividad 6), con el backlog actualizado en [`docs/BACKLOG.md`](docs/BACKLOG.md) |
 | `Calendario_Reuniones_SCRUM.pdf` | Calendario de las reuniones Scrum |
 
