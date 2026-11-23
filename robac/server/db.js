@@ -76,9 +76,38 @@ CREATE TABLE IF NOT EXISTS intentos_login (
   primer_fallo    INTEGER NOT NULL,
   bloqueado_hasta INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS ajustes (
+  clave TEXT PRIMARY KEY,
+  valor TEXT NOT NULL
+);
 `
 
-async function sembrar(db, iteraciones) {
+// Lee el primer administrador de las variables de entorno. Si no se indica, la base nueva
+// se llena con las cuentas de prueba (solo para desarrollo y demostración).
+export function administradorInicial(env = process.env) {
+  const correo = (env.ROBAC_ADMIN_CORREO ?? '').trim()
+  const password = env.ROBAC_ADMIN_CLAVE ?? ''
+  if (!correo && !password) return null
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+    throw new Error('ROBAC_ADMIN_CORREO no es un correo válido.')
+  }
+  if (password.length < 8) {
+    throw new Error('ROBAC_ADMIN_CLAVE debe tener al menos 8 caracteres.')
+  }
+  return {
+    id: 'admin-inicial',
+    nombre: (env.ROBAC_ADMIN_NOMBRE ?? '').trim() || 'Administrador',
+    correo,
+    password,
+    rolId: 'admin',
+    casa: '—',
+    activo: 1,
+  }
+}
+
+async function sembrar(db, iteraciones, administrador) {
+  const cuentas = administrador ? [administrador] : USUARIOS
   const permiso = db.prepare('INSERT INTO permisos (id, nombre) VALUES (?, ?)')
   const rol = db.prepare('INSERT INTO roles (id, nombre) VALUES (?, ?)')
   const concede = db.prepare('INSERT INTO rol_permisos (rol_id, permiso_id) VALUES (?, ?)')
@@ -88,7 +117,7 @@ async function sembrar(db, iteraciones) {
   )
 
   // El cifrado es asíncrono, así que se calcula antes de abrir la transacción.
-  const claves = await Promise.all(USUARIOS.map((u) => cifrar(u.password, iteraciones)))
+  const claves = await Promise.all(cuentas.map((u) => cifrar(u.password, iteraciones)))
 
   db.exec('BEGIN')
   try {
@@ -97,10 +126,11 @@ async function sembrar(db, iteraciones) {
       rol.run(r.id, r.nombre)
       for (const p of r.permisos) concede.run(r.id, p)
     }
-    USUARIOS.forEach((u, i) => {
+    cuentas.forEach((u, i) => {
       const c = claves[i]
       usuario.run(u.id, u.nombre, u.correo, c.sal, c.hash, c.iteraciones, u.rolId, u.casa, u.activo)
     })
+    guardarAjuste(db, 'cuentas_prueba', administrador ? '0' : '1')
     db.exec('COMMIT')
   } catch (error) {
     db.exec('ROLLBACK')
@@ -108,11 +138,28 @@ async function sembrar(db, iteraciones) {
   }
 }
 
-export async function abrirBase(ruta = ':memory:', { iteraciones = ITERACIONES } = {}) {
+function guardarAjuste(db, clave, valor) {
+  db.prepare('INSERT OR REPLACE INTO ajustes (clave, valor) VALUES (?, ?)').run(clave, valor)
+}
+
+export function leerAjuste(db, clave) {
+  return db.prepare('SELECT valor FROM ajustes WHERE clave = ?').get(clave)?.valor ?? null
+}
+
+export async function abrirBase(
+  ruta = ':memory:',
+  { iteraciones = ITERACIONES, administrador = null } = {},
+) {
   if (ruta !== ':memory:') mkdirSync(dirname(ruta), { recursive: true })
   const db = new DatabaseSync(ruta)
   db.exec(ESQUEMA)
   const vacia = db.prepare('SELECT COUNT(*) AS n FROM roles').get().n === 0
-  if (vacia) await sembrar(db, iteraciones)
+  if (vacia) {
+    await sembrar(db, iteraciones, administrador)
+  } else if (leerAjuste(db, 'cuentas_prueba') === null) {
+    // Bases creadas antes del Sprint 6: tienen cuentas de prueba si existe la de Ana.
+    const demo = db.prepare("SELECT 1 FROM usuarios WHERE id = 'u1'").get()
+    guardarAjuste(db, 'cuentas_prueba', demo ? '1' : '0')
+  }
   return db
 }

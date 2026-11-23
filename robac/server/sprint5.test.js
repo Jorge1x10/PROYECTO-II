@@ -117,7 +117,7 @@ describe('Publicación', () => {
   it('responde la verificación de salud sin sesión', async () => {
     srv = await crearServidorDePrueba()
     const r = await pedir('/salud')
-    expect(r).toEqual({ estado: 200, datos: { ok: true } })
+    expect(r).toEqual({ estado: 200, datos: { ok: true, cuentasPrueba: true } })
   })
 })
 

@@ -5,8 +5,12 @@ import { abrirBase } from './db.js'
 
 const ITERACIONES_PRUEBA = 1000
 
-export async function crearServidorDePrueba({ ruta = ':memory:', ...opciones } = {}) {
-  const db = await abrirBase(ruta, { iteraciones: ITERACIONES_PRUEBA })
+export async function crearServidorDePrueba({
+  ruta = ':memory:',
+  administrador = null,
+  ...opciones
+} = {}) {
+  const db = await abrirBase(ruta, { iteraciones: ITERACIONES_PRUEBA, administrador })
   const codigos = []
   const reloj = { ahora: Date.now() }
   const app = crearApp({

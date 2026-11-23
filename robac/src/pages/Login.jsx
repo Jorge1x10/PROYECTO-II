@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { pedir } from '../api/client'
 import { useApp } from '../context/AppContext'
 
 export default function Login() {
@@ -8,6 +9,18 @@ export default function Login() {
   const [correo, setCorreo] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [cuentasPrueba, setCuentasPrueba] = useState(false)
+
+  // Las cuentas de prueba solo se muestran si el servidor dice que existen.
+  useEffect(() => {
+    let vigente = true
+    pedir('/salud')
+      .then((r) => vigente && setCuentasPrueba(Boolean(r.cuentasPrueba)))
+      .catch(() => {})
+    return () => {
+      vigente = false
+    }
+  }, [])
 
   if (usuario) return <Navigate to="/" replace />
 
@@ -55,14 +68,16 @@ export default function Login() {
         <button type="submit">Iniciar sesión</button>
         <Link to="/recuperar">¿Olvidaste tu contraseña?</Link>
 
-        <details className="demo">
-          <summary>Cuentas de prueba</summary>
-          <ul>
-            <li>admin@robac.mx / admin123</li>
-            <li>guardia@robac.mx / guardia123</li>
-            <li>residente@robac.mx / residente123</li>
-          </ul>
-        </details>
+        {cuentasPrueba && (
+          <details className="demo">
+            <summary>Cuentas de prueba</summary>
+            <ul>
+              <li>admin@robac.mx / admin123</li>
+              <li>guardia@robac.mx / guardia123</li>
+              <li>residente@robac.mx / residente123</li>
+            </ul>
+          </details>
+        )}
       </form>
     </div>
   )

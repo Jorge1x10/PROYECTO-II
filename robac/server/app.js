@@ -12,6 +12,7 @@ import {
   verificar,
 } from './auth.js'
 import { envioPorConsola } from './correo.js'
+import { leerAjuste } from './db.js'
 
 const MIN_PASSWORD = 6
 const SESION_MS = 8 * 60 * 60 * 1000
@@ -239,8 +240,9 @@ export function crearApp({
         : next(new ErrorHttp(403, 'No tienes permiso para hacer esto.'))
 
   // Para que el servicio de publicación compruebe que el servidor está vivo.
+  // También le dice a la pantalla de inicio si debe mostrar las cuentas de prueba.
   app.get('/api/salud', (req, res) => {
-    res.json({ ok: true })
+    res.json({ ok: true, cuentasPrueba: leerAjuste(db, 'cuentas_prueba') === '1' })
   })
 
   // ---------- Sesión ----------
