@@ -1,12 +1,15 @@
 // @vitest-environment node
 // Sprint 6: primer administrador sin cuentas de prueba, respaldos y bitácora con filtros.
 import { mkdtempSync, rmSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { crearServidorDePrueba } from './ayudas-prueba.js'
 import { abrirBase, administradorInicial, leerAjuste } from './db.js'
+import { listarRespaldos, respaldar } from './respaldo.js'
 
+const { DatabaseSync } = createRequire(import.meta.url)('node:sqlite')
 const ADMIN = {
   ROBAC_ADMIN_CORREO: 'jefa@coto.mx',
   ROBAC_ADMIN_CLAVE: 'clave-segura',
@@ -83,5 +86,36 @@ describe('HU22 · primer administrador sin cuentas de prueba', () => {
     const reabierta = await abrirBase(ruta, { iteraciones: 1000 })
     expect(leerAjuste(reabierta, 'cuentas_prueba')).toBe('1')
     reabierta.close()
+  })
+})
+
+describe('HU25 · respaldos de la base de datos', () => {
+  it('el respaldo es una copia completa que se puede abrir', async () => {
+    const carpeta = carpetaTemporal()
+    const db = await abrirBase(':memory:', { iteraciones: 1000 })
+    db.prepare(
+      "INSERT INTO bitacora (fecha, actor, accion, detalle) VALUES (?, 'Sistema', 'Prueba', 'antes del respaldo')",
+    ).run(new Date().toISOString())
+    const ruta = respaldar(db, carpeta, { ahora: new Date(2026, 11, 1, 3, 0, 0) })
+    db.close()
+
+    expect(ruta).toMatch(/robac-20261201-030000\.db$/)
+    const copia = new DatabaseSync(ruta)
+    expect(copia.prepare('SELECT COUNT(*) AS n FROM usuarios').get().n).toBe(4)
+    expect(
+      copia.prepare("SELECT detalle FROM bitacora WHERE accion = 'Prueba'").get().detalle,
+    ).toBe('antes del respaldo')
+    copia.close()
+  })
+
+  it('conserva solo los últimos 7 respaldos', async () => {
+    const carpeta = carpetaTemporal()
+    const db = await abrirBase(':memory:', { iteraciones: 1000 })
+    for (let dia = 1; dia <= 9; dia += 1) respaldar(db, carpeta, { ahora: new Date(2026, 10, dia) })
+    db.close()
+    const quedan = listarRespaldos(carpeta)
+    expect(quedan).toHaveLength(7)
+    expect(quedan[0]).toBe('robac-20261103-000000.db')
+    expect(quedan[6]).toBe('robac-20261109-000000.db')
   })
 })

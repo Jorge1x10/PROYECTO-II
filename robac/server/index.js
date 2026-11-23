@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { crearApp } from './app.js'
 import { crearEnvioDeCodigo } from './correo.js'
 import { abrirBase, administradorInicial, leerAjuste } from './db.js'
+import { programarRespaldos } from './respaldo.js'
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..')
 const rutaBase = process.env.ROBAC_DB ?? join(raiz, 'data', 'robac.db')
@@ -47,10 +48,19 @@ const app = crearApp({
   carpetaWeb: existsSync(dist) ? dist : null,
 })
 
+// Respaldo al arrancar y cada 24 horas (ROBAC_RESPALDO_HORAS=0 los desactiva).
+const horasRespaldo = Number(process.env.ROBAC_RESPALDO_HORAS ?? 24)
+const carpetaRespaldos = process.env.ROBAC_RESPALDOS ?? join(dirname(rutaBase), 'respaldos')
+if (horasRespaldo > 0) programarRespaldos(db, carpetaRespaldos, horasRespaldo)
 
 app.listen(puerto, anfitrion, () => {
   console.log(`ROBAC escuchando en http://${anfitrion}:${puerto}`)
   console.log(`Base de datos: ${rutaBase}`)
   console.log(`Códigos de recuperación: ${correo.modo}`)
   console.log(`Cuentas de prueba: ${conCuentasDePrueba ? 'sí (solo para demostración)' : 'no'}`)
+  console.log(
+    horasRespaldo > 0
+      ? `Respaldos: cada ${horasRespaldo} h en ${carpetaRespaldos}`
+      : 'Respaldos: desactivados',
+  )
 })
